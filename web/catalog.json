@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "documents": [
+    {
+      "id": "DEA-2026-238",
+      "version": "1.0",
+      "title": "Scopus Integration for Researcher Renewal and Recruitment Forms",
+      "illustrations": [
+        {
+          "id": "developer-flow",
+          "title": "Interactive Developer Flow (S1-S15)",
+          "path": "/illustrations/DEA-2026-238/v1.0/developer-flow.html",
+          "description": "Sequence diagram, API notes, design checks and acceptance checklist"
+        }
+      ]
+    }
+  ]
+}

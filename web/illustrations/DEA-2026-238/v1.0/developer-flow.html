@@ -1,0 +1,527 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>DEA-2026-238 Developer Flow</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a sequence diagram (five lifelines, top-to-bottom calls) beside a sticky step sheet; below it the data contract, reference code, API cards, design checks and the acceptance checklist. */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --ink:#16202c; --muted:#596476; --rule:#d2d8e1; --grid:#e6eaf0;
+  --accent:#2b5c8e; --accent-soft:#e1eaf5; --code-bg:#eef2f7;
+  --warn:#9a6a0c; --warn-soft:#f7edd8; --gate:#ad4429; --gate-soft:#f6e3dc;
+  --f-display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f141b; --surface:#17202a; --ink:#e4e9f0; --muted:#98a3b3; --rule:#2b3644; --grid:#222c38;
+  --accent:#86b5e6; --accent-soft:#1b2c40; --code-bg:#121a23;
+  --warn:#e3b65a; --warn-soft:#33291a; --gate:#ec9175; --gate-soft:#3a2420; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141b; --surface:#17202a; --ink:#e4e9f0; --muted:#98a3b3; --rule:#2b3644; --grid:#222c38;
+  --accent:#86b5e6; --accent-soft:#1b2c40; --code-bg:#121a23;
+  --warn:#e3b65a; --warn-soft:#33291a; --gate:#ec9175; --gate-soft:#3a2420; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+.wrap{max-width:1500px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr);gap:30px}
+.wrap>*{min-width:0}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
+p{margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+code,.mono{font-family:var(--f-mono);font-size:.92em}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+header{display:grid;gap:10px}
+h1{font-size:clamp(28px,4vw,38px);font-weight:700;line-height:1.1}
+.lede{max-width:80ch}
+.facts{display:flex;flex-wrap:wrap;gap:8px 10px;margin-top:4px}
+.facts span{font-size:13px;padding:3px 9px;border:1px solid var(--rule);border-radius:4px;background:var(--surface)}
+.facts b{font-weight:600}
+
+/* main split */
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,430px);gap:22px;align-items:start}
+.diagram{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:16px 14px 10px;min-width:0}
+.diagram figcaption{font-size:13px;color:var(--muted);padding:6px 6px 0;max-width:90ch}
+.scroll{overflow-x:auto}
+.scroll svg{display:block;width:100%;height:auto;min-width:860px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:var(--muted);padding:2px 6px 10px}
+.legend span{display:inline-flex;gap:7px;align-items:center}
+
+/* svg classes */
+.life-box{fill:var(--surface);stroke:var(--ink);stroke-width:1.2}
+.life-title{fill:var(--ink);font-family:var(--f-display);font-weight:600;font-size:14px}
+.life-sub{fill:var(--muted);font-family:var(--f-body);font-size:11px}
+.life-line{stroke:var(--line,var(--rule));stroke-width:1.2;stroke-dasharray:4 5}
+.msg{stroke:var(--ink);stroke-width:1.4;fill:none}
+.msg.ret{stroke-dasharray:5 4}
+.lbl{fill:var(--ink);font-family:var(--f-body);font-size:12px}
+.lbl.api{font-family:var(--f-mono);font-size:11.5px}
+.ah{fill:var(--ink)}
+.frame{fill:none;stroke:var(--muted);stroke-width:1}
+.frame-tag{fill:var(--surface);stroke:var(--muted);stroke-width:1}
+.frame-txt{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+.badge{fill:var(--surface);stroke:var(--accent);stroke-width:1.3}
+.badge-t{fill:var(--accent);font-family:var(--f-mono);font-weight:600;font-size:11px}
+.band{fill:transparent}
+.row{cursor:pointer}
+.row:hover .band{fill:var(--grid)}
+.row.on .band{fill:var(--accent-soft)}
+.row.on .msg{stroke:var(--accent);stroke-width:2}
+.row.on .ah{fill:var(--accent)}
+.row.on .lbl{fill:var(--accent);font-weight:600}
+.gate-dot{fill:var(--gate)}
+
+/* step sheet */
+.sheet{position:sticky;top:calc(env(safe-area-inset-top,0px) + 14px);background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:18px 18px 20px;display:grid;gap:13px;max-height:calc(100vh - 28px);overflow:auto;scroll-margin-top:14px}
+.sheet-nav{display:flex;flex-wrap:wrap;gap:5px}
+.sn{all:unset;cursor:pointer;font-family:var(--f-mono);font-size:11.5px;font-weight:600;padding:2px 7px;border:1px solid var(--rule);border-radius:4px;color:var(--muted)}
+.sn:hover{border-color:var(--accent);color:var(--accent)}
+.sn[aria-current="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.sn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.s-head{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.s-id{font-family:var(--f-mono);font-weight:600;color:var(--accent)}
+.s-head h2{font-size:21px;font-weight:600}
+.s-meta{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:12px;padding:1px 8px;border-radius:999px;border:1px solid var(--rule);color:var(--muted)}
+.tag.fr{border-color:var(--accent);color:var(--accent)}
+.tag.gate{border-color:var(--gate);color:var(--gate);background:var(--gate-soft)}
+.sheet h3{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.sheet ul{margin:0;padding-left:18px;display:grid;gap:5px;font-size:14px}
+.sheet .blk{display:grid;gap:6px}
+.api-box{background:var(--code-bg);border:1px solid var(--rule);border-radius:6px;padding:10px 12px;font-family:var(--f-mono);font-size:12.5px;line-height:1.55;overflow-x:auto;white-space:pre}
+.check{background:var(--warn-soft);border-left:3px solid var(--warn);padding:9px 12px;border-radius:0 6px 6px 0;font-size:14px}
+.check b{color:var(--warn)}
+.test{font-size:14px;border-left:3px solid var(--accent);padding:2px 0 2px 12px}
+
+/* lower sections */
+section.card{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:20px 20px 22px;display:grid;gap:14px;min-width:0}
+section.card>h2{font-size:22px;font-weight:600}
+section.card>p.sub{color:var(--muted);font-size:14px;max-width:85ch}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:820px}
+th,td{text-align:left;vertical-align:top;padding:8px 10px;border-bottom:1px solid var(--rule)}
+th{font-family:var(--f-display);font-weight:600;font-size:13px;letter-spacing:.03em;color:var(--muted);text-transform:uppercase}
+td code{white-space:nowrap}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:14px}
+.api-card{border:1px solid var(--rule);border-radius:8px;padding:14px;display:grid;gap:8px;align-content:start}
+.api-card h3{font-size:16px;font-weight:600}
+.api-card dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:13.5px}
+.api-card dt{color:var(--muted)}
+.api-card dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.codewrap{position:relative;min-width:0}
+section.card>*{min-width:0}
+.sheet>*{min-width:0}
+pre.code{margin:0;background:var(--code-bg);border:1px solid var(--rule);border-radius:8px;padding:14px 16px;overflow-x:auto;font-family:var(--f-mono);font-size:12.8px;line-height:1.6}
+.copy{position:absolute;top:8px;right:8px;font-family:var(--f-mono);font-size:12px;padding:3px 10px;border:1px solid var(--rule);border-radius:4px;background:var(--surface);cursor:pointer}
+.copy:hover{border-color:var(--accent);color:var(--accent)}
+.checks{display:grid;gap:10px;counter-reset:c}
+.checks li{list-style:none}
+.dc{display:grid;grid-template-columns:2.2em minmax(0,1fr);gap:4px 10px;padding:11px 12px;border:1px solid var(--rule);border-radius:8px}
+.dc .n{font-family:var(--f-mono);font-weight:600;color:var(--warn)}
+.dc b{font-weight:600}
+.dc .why{color:var(--muted);font-size:14px;grid-column:2}
+.accept{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.accept label{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;padding:9px 10px;border:1px solid var(--rule);border-radius:6px;cursor:pointer;font-size:14px}
+.accept input{margin-top:4px;accent-color:var(--accent);width:16px;height:16px}
+.accept .ref{font-family:var(--f-mono);font-size:11.5px;color:var(--accent);margin-right:6px}
+.prog{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+footer{font-size:13px;color:var(--muted);max-width:100ch}
+
+@media (max-width:1180px){
+  .split{grid-template-columns:minmax(0,1fr)}
+  .sheet{position:static;max-height:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">DEA-2026-238 · Research Operations · BRD v1.0 (21 Oct 2026) · for the T.I.</div>
+    <h1>DEA-2026-238 Developer Flow</h1>
+    <p class="lede">How the Scopus publication section behaves on the ESCR contract renewal form and the Researcher Recruitment Approval form, call by call. Select any step in the diagram for its rules, API call, edge cases and the BRD requirement it implements. The API details are a reference: the BRD leaves the implementation approach to the T.I.</p>
+    <div class="facts">
+      <span><b>Forms:</b> ESCR contract renewal (ESCR-CR) · Researcher Recruitment Approval</span>
+      <span><b>Source:</b> Scopus only</span>
+      <span><b>Identifier:</b> Scopus Author ID, entered by the requester</span>
+      <span><b>Retrieved:</b> at submission and on resubmission</span>
+      <span><b>Approval routing:</b> unchanged</span>
+    </div>
+  </header>
+
+  <div class="split">
+    <figure class="diagram" style="margin:0">
+      <div class="legend">
+        <span><svg width="34" height="10" viewBox="0 0 34 10" aria-hidden="true"><path d="M1 5 H26" stroke="currentColor" stroke-width="1.4"/><path d="M26 1 L33 5 L26 9 Z" fill="currentColor"/></svg>Call or action</span>
+        <span><svg width="34" height="10" viewBox="0 0 34 10" aria-hidden="true"><path d="M1 5 H26" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 4"/><path d="M26 1 L33 5 L26 9 Z" fill="currentColor"/></svg>Response</span>
+        <span><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="5" class="gate-dot"/></svg>Gate: submission waits for it</span>
+        <span class="mono">alt · loop · opt</span> frames mark a branch, a repeat, an optional path
+      </div>
+      <div class="scroll"><svg id="seq" role="img" aria-label="Sequence of the Scopus publication section: the requester enters a Scopus Author ID, the form looks up and confirms the profile, the lookup reads career metrics, review-period publications and journal percentiles from Scopus, the form stores a dated snapshot at submission, approvers see it unchanged, and a returned request refreshes it on resubmission."></svg></div>
+      <figcaption>Five participants, top to bottom in time. The Scopus lookup sits between the form and Elsevier, so the form never calls Scopus directly. Rows 10–20 run again when a returned request is resubmitted.</figcaption>
+    </figure>
+    <aside class="sheet" id="sheet" aria-live="polite"></aside>
+  </div>
+
+  <section class="card" id="contract">
+    <h2>Data contract</h2>
+    <p class="sub">Every field in the Scopus publication section, where it comes from, and the rule that fills it. Names in <code>code</code> are Elsevier API fields.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Form field</th><th>Shown as</th><th>Source</th><th>API · view · field</th><th>Rule</th><th>BRD</th></tr></thead>
+      <tbody id="contract-rows"></tbody>
+    </table></div>
+  </section>
+
+  <section class="card" id="code">
+    <h2>Reference logic: review period and Q1</h2>
+    <p class="sub">Python-style reference for the three calculations the BRD fixes as business rules. Field paths follow Elsevier's JSON responses; verify them against one live response during requirements confirmation. It replaces two behaviours of the script in “API use case.docx”: that script takes the first percentile listed, and here the percentile comes from the journal's primary subject category; and it adds the review-period filter.</p>
+    <div class="codewrap"><button class="copy" type="button" id="copy">Copy</button><pre class="code" id="ref"></pre></div>
+  </section>
+
+  <section class="card" id="apis">
+    <h2>Scopus API reference</h2>
+    <p class="sub">Three Scopus APIs cover the whole section. Quotas and rate limits are Elsevier's published defaults per API key. At an estimated 10–25 calls per submission (two author calls, one or two search pages, one call per distinct journal), volume stays far inside them.</p>
+    <div class="two" id="api-cards"></div>
+  </section>
+
+  <section class="card" id="checks">
+    <h2>Design checks before build</h2>
+    <p class="sub">Points the BRD settles as outcomes but the build has to resolve against the live workflows. Each is quick to confirm in the requirements-confirmation phase.</p>
+    <ol class="checks" id="check-list"></ol>
+  </section>
+
+  <section class="card" id="accept">
+    <h2>Acceptance checklist</h2>
+    <p class="sub">The BRD's acceptance criteria as a UAT checklist. Ticks are saved in this browser only. <span class="prog" id="prog"></span></p>
+    <ul class="accept" id="accept-list"></ul>
+  </section>
+
+  <footer>Built from the DEA-2026-238 BRD v1.0 (21 Oct 2026), the ESCR and Researcher Recruitment runtime samples in the folio's evidence folder, and Elsevier's Scopus API Guide and Author Retrieval views documentation. Where this page and the BRD differ, the BRD governs.</footer>
+</div>
+
+<script>
+const L={req:{x:150,t:"Requester",s:"faculty / PI · hiring manager"},form:{x:370,t:"Form",s:"K2/Nintex · KUConnect"},look:{x:600,t:"Scopus lookup",s:"integration (T.I.)"},api:{x:840,t:"Scopus APIs",s:"Elsevier · read-only"},wf:{x:1050,t:"Approval workflow",s:"existing chains"}};
+const W=1150, TOP=96, STEP=38;
+// rows: [step, from, to, label, kind]  kind: c=call r=response s=self
+const R=[
+ ["S1","req","form","Open renewal or recruitment request","c"],
+ ["S2","form","form","Show section: ESCR-CR or recruitment","s"],
+ ["S3","req","form","Enter Scopus Author ID","c"],
+ ["S4","form","look","Look up profile (Author ID)","c"],
+ ["S4","look","api","GET author_id/{id}  view=LIGHT","c",1],
+ ["S4","api","look","name, current affiliation","r",1],
+ ["S5","look","form","profile + Scopus profile link","r"],
+ ["S5","form","req","Show profile for confirmation","c"],
+ ["S6","req","form","Correct the ID, repeat rows 4–8","c"],
+ ["S6","req","form","Confirm profile","c"],
+ ["S7","form","look","Get data (ID, period inputs)","c"],
+ ["S7","look","look","Set review period in whole years","s"],
+ ["S8","look","api","GET author_id/{id}  view=METRICS","c",1],
+ ["S8","api","look","h-index, citation-count, doc-count","r",1],
+ ["S9","look","api","GET search/scopus  AU-ID + PUBYEAR","c",1],
+ ["S9","api","look","totalResults, ISSN per document","r",1],
+ ["S10","look","api","GET serial/title/issn  CITESCORE","c",1],
+ ["S10","api","look","percentile per subject, per year","r",1],
+ ["S10","look","look","Q1 if percentile ≥ 75","s"],
+ ["S11","look","form","snapshot + retrievedOn","r"],
+ ["S11","form","req","Read-only section, “data as of”","c"],
+ ["S12","req","form","Submit","c"],
+ ["S12","form","wf","Save snapshot on request, start workflow","c"],
+ ["S13","wf","wf","Every stage sees it; routing unchanged","s"],
+ ["S14","wf","req","Send back to WFA/WFB · Return to Initiator","r"],
+ ["S14","req","form","Resubmit: re-run rows 11–21, new date","c"],
+ ["S15","wf","wf","Complete; snapshot stays on the record","s"]
+];
+const FRAMES=[{t:"alt",l:"profile is not the researcher",a:8,b:8,x1:92,x2:430},{t:"loop",l:"each distinct ISSN, cached per request",a:16,b:17,x1:560,x2:905},{t:"opt",l:"returned and resubmitted",a:24,b:25,x1:92,x2:1110}];
+const GATES={9:true,21:true};
+const NS="http://www.w3.org/2000/svg";
+const svg=document.getElementById("seq");
+const GAP=18;
+function yOf(i){return TOP+i*STEP+GAP*FRAMES.filter(f=>f.a<=i).length;}
+const H=yOf(R.length-1)+STEP+30;
+svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+function el(n,a,p){const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);(p||svg).appendChild(e);return e;}
+function txt(s,a,p){const e=el("text",a,p);e.textContent=s;return e;}
+// lifelines
+Object.values(L).forEach(l=>{
+  el("line",{x1:l.x,y1:62,x2:l.x,y2:H-14,class:"life-line"});
+  el("rect",{x:l.x-82,y:14,width:164,height:46,rx:6,class:"life-box"});
+  txt(l.t,{x:l.x,y:34,"text-anchor":"middle",class:"life-title"});
+  txt(l.s,{x:l.x,y:50,"text-anchor":"middle",class:"life-sub"});
+});
+// frames (drawn under rows)
+FRAMES.forEach(f=>{
+  const y1=yOf(f.a)-38,y2=yOf(f.b)+16;
+  el("rect",{x:f.x1,y:y1,width:f.x2-f.x1,height:y2-y1,rx:3,class:"frame"});
+  const w=f.t.length*7.4+14;
+  el("path",{d:`M${f.x1} ${y1} H${f.x1+w} V${y1+11} L${f.x1+w-7} ${y1+17} H${f.x1} Z`,class:"frame-tag"});
+  txt(f.t,{x:f.x1+6,y:y1+12.5,class:"frame-txt"});
+  txt("["+f.l+"]",{x:f.x1+w+8,y:y1+12.5,class:"frame-txt"});
+});
+// rows
+const rowEls=[];let lastStep=null;
+R.forEach((r,i)=>{
+  const [s,from,to,label,kind,isApi]=r;const y=yOf(i);
+  const g=el("g",{class:"row","data-step":s,tabindex:"-1"});
+  el("rect",{x:2,y:y-STEP/2-4,width:W-4,height:STEP,class:"band",rx:4},g);
+  if(s!==lastStep){el("circle",{cx:40,cy:y-4,r:15,class:"badge"},g);txt(s,{x:40,y:y,"text-anchor":"middle",class:"badge-t"},g);lastStep=s;}
+  txt(String(i+1),{x:72,y:y,"text-anchor":"middle",class:"life-sub"},g);
+  const x1=L[from].x,x2=L[to].x;
+  if(kind==="s"){
+    const left=from==="wf";const dx=left?-34:34;
+    el("path",{d:`M${x1} ${y-12} H${x1+dx} V${y+4} H${x1+(left?-6:6)}`,class:"msg"},g);
+    const ax=x1+(left?-6:6);
+    el("path",{d:left?`M${ax} ${y+4} l8 -4 v8 Z`:`M${ax} ${y+4} l-8 -4 v8 Z`,class:"ah"},g);
+    txt(label,{x:x1+(left?-42:42),y:y-1,"text-anchor":left?"end":"start",class:"lbl"},g);
+  }else{
+    const dir=x2>x1?1:-1;const xe=x2-dir*2;
+    el("line",{x1:x1,y1:y+4,x2:xe-dir*7,y2:y+4,class:"msg"+(kind==="r"?" ret":"")},g);
+    el("path",{d:`M${xe} ${y+4} l${-dir*9} -4.5 v9 Z`,class:"ah"},g);
+    txt(label,{x:(x1+x2)/2,y:y-4,"text-anchor":"middle",class:"lbl"+(isApi?" api":"")},g);
+  }
+  if(GATES[i]){el("circle",{cx:L.req.x-14,cy:y+4,r:5,class:"gate-dot"},g);}
+  g.addEventListener("click",()=>select(s,true));
+  rowEls.push(g);
+});
+
+const S={
+ S1:{t:"Open the request",lane:"Requester → Form",fr:["FR6"],
+  what:"The requester opens an existing form on KUConnect. ESCR: a faculty member or PI raises a contract renewal, which starts ESC Request Research WFA on submission. Recruitment: the hiring manager, or someone on their behalf, opens Researcher Recruitment Approval.",
+  rules:["Both forms keep their current fields, sections and routing. The Scopus publication section is the only addition.","The recruitment form supports on-behalf-of submission; the Scopus section behaves the same either way."],
+  test:"Both forms open as today, with the Scopus publication section present where S2 says it should be."},
+ S2:{t:"Decide whether the section shows",lane:"Form",fr:["FR6"],
+  what:"The form shows the Scopus publication section only where the BRD puts it in scope.",
+  rules:["ESCR: show only when the change type is Contract Renewal (request numbers start ESCR-CR-).","ESCR transfer, promotion, salary change and non-renewal requests: section hidden, form unchanged.","Researcher Recruitment Approval: show on every request."],
+  check:"Confirm which ESCR field carries the change type at the time the form is filled. The request number prefix is set later, so the condition should read the change-type field itself.",
+  test:"Open an ESCR transfer request: no Scopus section. Open an ESCR renewal and a recruitment request: section present."},
+ S3:{t:"Enter the Scopus Author ID",lane:"Requester → Form",fr:["FR1"],
+  what:"The requester types the researcher's Scopus Author ID: the researcher for a renewal, the candidate for a recruitment request.",
+  rules:["The Scopus Author ID is the only identifier. The form never searches Scopus by name.","Accept digits only (Scopus Author IDs are usually 10–11 digits). Trim spaces before validating.","Optional convenience: accept a pasted Scopus profile URL and take the authorId value from it."],
+  edge:["Non-numeric input: inline message, no lookup.","ID changed after a profile was confirmed: clear the confirmation and every retrieved value, then look up again."],
+  test:"Entering letters or an empty value does not trigger a lookup; entering a valid ID does."},
+ S4:{t:"Look up the profile",lane:"Form → Lookup → Scopus",fr:["FR1"],
+  what:"The form asks the Scopus lookup for the profile; the lookup calls Author Retrieval and returns the author's name and current affiliation.",
+  api:"GET https://api.elsevier.com/content/author/author_id/{id}?view=LIGHT\nHeaders:\n  X-ELS-APIKey: <key>\n  Accept: application/json\n  X-ELS-Insttoken: <token>   (only when calling from outside the KU network)\nReturns: preferred name, current affiliation\n         (name, city, country), document-count",
+  rules:["LIGHT is not marked as entitlement-restricted by Elsevier.","Credentials live in the lookup, never in the form or its data (NFR: Credential Security)."],
+  edge:["No profile for the ID: tell the requester no Scopus profile was found and let them correct the ID (back to S3).","HTTP 429 means a quota or throttle limit was reached (Elsevier's documented behaviour)."],
+  test:"A known ID returns the correct name and affiliation within the time the requester is filling the form."},
+ S5:{t:"Show the profile for confirmation",lane:"Lookup → Form → Requester",fr:["FR1"],
+  what:"The form shows the author name, current affiliation and a link to the Scopus profile so the requester can check it is the right person.",
+  rules:["Profile link: https://www.scopus.com/authid/detail.uri?authorId={id}","Show the values read-only. Nothing is editable in the Scopus section except the Author ID."],
+  test:"The link opens the same author profile in Scopus."},
+ S6:{t:"Confirm or correct",lane:"Requester → Form",fr:["FR1"],gate:true,
+  what:"The requester confirms that the profile belongs to the researcher. If it doesn't, they correct the ID and the profile is retrieved again.",
+  rules:["Submission is blocked until the profile is confirmed.","Confirmation is tied to the ID: changing the ID clears it."],
+  test:"Submit is unavailable before confirmation and becomes available after it; changing the ID makes it unavailable again."},
+ S7:{t:"Set the review period",lane:"Form → Lookup",fr:["FR3"],
+  what:"The lookup works out which publication years count for this request.",
+  rules:["ESCR contract renewal: from the calendar year the current contract started, to the current year.","Recruitment: the five most recent publication years, including the current year (current year − 4 to current year).","Periods are whole publication years, matching how Scopus records publication dates.","Example: contract started Mar 2024, retrieved Oct 2026 → 2024–2026. Recruitment in 2026 → 2022–2026."],
+  check:"Confirm the ESCR field that holds the current contract start date (BRD Assumption 3). If the request doesn't hold it, agree its source before build (BRD Risk 6).",
+  test:"Renewal and recruitment requests show the correct from–to years for the cases above."},
+ S8:{t:"Read career metrics",lane:"Lookup → Scopus",fr:["FR2"],
+  what:"The lookup reads the three career figures from the author profile.",
+  api:"GET https://api.elsevier.com/content/author/author_id/{id}?view=METRICS\nReturns:\n  h-index          → h-index\n  citation-count   → total citations\n  document-count   → total documents",
+  rules:["All three are career figures for the whole Scopus profile. They are not limited to the review period.","Use citation-count for total citations. cited-by-count is the number of citing documents, a different figure.","Scopus is the only source. Do not read Khazna (Pure), Fusion or Fibi metrics."],
+  check:"During UAT, compare the three figures with the researcher's Scopus profile page for the same day.",
+  test:"h-index, citations and documents match the Scopus profile on the retrieval date."},
+ S9:{t:"Count publications in the period",lane:"Lookup → Scopus",fr:["FR3"],
+  what:"The lookup searches Scopus for the author's documents in the review period. The result count is the period publication count; the ISSNs feed the Q1 step.",
+  api:"GET https://api.elsevier.com/content/search/scopus\n  ?query=AU-ID({id}) AND PUBYEAR > {from-1} AND PUBYEAR < {to+1}\n  &field=dc:identifier,prism:issn,prism:eIssn\n  &count=200&start=0        (page with start while start < total)\nReturns: opensearch:totalResults, entry[] with prism:issn / prism:eIssn",
+  rules:["Publications in period = opensearch:totalResults.","All Scopus document types count, the same basis as total documents.","Use prism:issn, falling back to prism:eIssn, for each document."],
+  edge:["No documents in the period: both period counts are 0. Scopus returns an empty result as a single entry with an error note and totalResults 0."],
+  test:"The period count matches a Scopus search for the same author and years."},
+ S10:{t:"Classify Q1 journals",lane:"Lookup ↔ Scopus (loop)",fr:["FR4"],
+  what:"For each distinct ISSN, the lookup reads the journal's CiteScore percentiles and counts the paper as Q1 when the rule is met.",
+  api:"GET https://api.elsevier.com/content/serial/title/issn/{issn}?view=CITESCORE\nReturns: citeScoreYearInfo[] (@year, @status Complete | In-Progress)\n         with a percentile per subject category",
+  rules:["Q1 = percentile ≥ 75 in the journal's primary subject category.","Year: the in-progress CiteScore year where it has a percentile, otherwise the latest Complete year.","Same rule as DEA-2025-182, so KU keeps one Q1 definition.","A document with no ISSN, or a journal with no CiteScore percentile, counts as a publication but not as Q1.","Call each ISSN once per request and reuse the result for the other papers in that journal."],
+  check:"Serial Title does not label one category as primary. Derive the primary category the same way as the DEA-2025-182 Phase 2 build, so both processes agree.",
+  test:"Q1 count matches a manual check of the journals' percentiles in their primary category for the current CiteScore year."},
+ S11:{t:"Compose the snapshot",lane:"Lookup → Form → Requester",fr:["FR5"],
+  what:"The lookup returns one snapshot; the form shows it read-only with its date.",
+  rules:["Snapshot fields: Author ID, name, affiliation, profile link, h-index, total citations, total documents, period from and to years, publications in period, Q1 publications in period, retrievedOn.","The form shows “Scopus data as of {retrievedOn}”."],
+  test:"The section shows all values with the retrieval date."},
+ S12:{t:"Submit and store",lane:"Requester → Form → Workflow",fr:["FR2","FR5"],gate:true,
+  what:"On submit, the snapshot is saved on the request and the existing workflow starts.",
+  rules:["The BRD fixes the figures at submission. If the form was saved and is submitted on a later day than the retrieval, run rows 11–20 again before saving, so retrievedOn is the submission date.","ESCR: submission starts ESC Request Research WFA as today. Recruitment: submission starts Researcher Recruitment Approval as today.","Implementation approach for retrieving and storing is at the T.I.'s discretion (FR5)."],
+  test:"The stored values and date on the submitted request match what the requester saw."},
+ S13:{t:"Approvals see the same figures",lane:"Workflow",fr:["FR5","FR6"],
+  what:"Every approver sees the Scopus section exactly as stored. Nothing refreshes between stages.",
+  rules:["ESCR chain (unchanged): WFA → WFB → WFC (Approval ESC, letters, approvals).","Recruitment chain (unchanged): Hiring Manager → PI (when the hiring manager is not the PI) → Associate Director, Research Services → Director, Research Services → Associate Provost of Research → Provost → Recruitment Manager → HR Director.","The section is read-only at every stage and follows each form's existing access rules."],
+  test:"An approver at the last stage sees the same figures and date as the first."},
+ S14:{t:"Returned and resubmitted",lane:"Workflow → Requester → Form",fr:["FR5"],
+  what:"When a request comes back to the requester and is resubmitted, the figures are retrieved again and the date updated.",
+  rules:["ESCR: WFC can send a request back to WFA or WFB. Recruitment: Return to Initiator.","On resubmission, re-run rows 11–21 with the confirmed ID. If the requester changes the ID, go back to S4–S6 first.","Store the new snapshot with its new retrievedOn."],
+  check:"Confirm which WFC send-back route returns the request to the requester. The refresh is tied to the requester's resubmission, not to every workflow restart.",
+  test:"A returned and resubmitted request shows a new retrieval date and freshly retrieved figures."},
+ S15:{t:"Complete",lane:"Workflow",fr:["FR5"],
+  what:"The request completes through its existing final steps. The snapshot stays on the closed request as the record of what the decision was based on.",
+  rules:["No further Scopus calls after completion.","No copy of the data is kept outside the request (BRD Scope Exclusion: no standing background sync, no reporting store)."],
+  test:"A completed request still shows the Scopus section with its retrieval date."}
+};
+
+const sheet=document.getElementById("sheet");
+const steps=Object.keys(S);
+function rowsOf(s){return R.map((r,i)=>r[0]===s?i+1:null).filter(Boolean);}
+function select(s,user){
+  rowEls.forEach(g=>g.classList.toggle("on",g.dataset.step===s));
+  const d=S[s],rows=rowsOf(s);
+  const list=(a)=>a&&a.length?`<ul>${a.map(x=>`<li>${x}</li>`).join("")}</ul>`:"";
+  sheet.innerHTML=`
+   <nav class="sheet-nav" aria-label="Steps">${steps.map(k=>`<button type="button" class="sn" data-s="${k}" aria-current="${k===s}">${k}</button>`).join("")}</nav>
+   <div class="s-head"><span class="s-id">${s}</span><h2>${d.t}</h2></div>
+   <div class="s-meta"><span class="tag">${d.lane}</span><span class="tag">rows ${rows[0]}${rows.length>1?"–"+rows[rows.length-1]:""}</span>${d.fr.map(f=>`<span class="tag fr">${f}</span>`).join("")}${d.gate?'<span class="tag gate">Gate</span>':""}</div>
+   <p>${d.what}</p>
+   ${d.api?`<div class="blk"><h3>API call</h3><div class="api-box">${d.api.replace(/</g,"&lt;")}</div></div>`:""}
+   <div class="blk"><h3>Rules</h3>${list(d.rules)}</div>
+   ${d.edge?`<div class="blk"><h3>Edge cases</h3>${list(d.edge)}</div>`:""}
+   ${d.check?`<p class="check"><b>Design check.</b> ${d.check}</p>`:""}
+   <div class="blk"><h3>Test</h3><p class="test">${d.test}</p></div>
+   <div style="display:flex;gap:8px;justify-content:space-between">
+     <button type="button" class="sn" data-s="${steps[Math.max(0,steps.indexOf(s)-1)]}">← Previous</button>
+     <button type="button" class="sn" data-s="${steps[Math.min(steps.length-1,steps.indexOf(s)+1)]}">Next →</button>
+   </div>`;
+  sheet.querySelectorAll("[data-s]").forEach(b=>b.addEventListener("click",()=>select(b.dataset.s,false)));
+  try{history.replaceState(null,"","#"+s);}catch(_){}
+  if(user&&window.matchMedia("(max-width:1180px)").matches){
+    sheet.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});
+  }
+}
+
+const C=[
+ ["Scopus Author ID","Input","Requester","—","Digits only; the only identifier; changing it clears everything below","FR1"],
+ ["Profile name","Read-only","Scopus","Author Retrieval · LIGHT · preferred name","Shown for confirmation","FR1"],
+ ["Current affiliation","Read-only","Scopus","Author Retrieval · LIGHT · affiliation-current","Shown for confirmation","FR1"],
+ ["Scopus profile link","Link","Derived","<code>scopus.com/authid/detail.uri?authorId={id}</code>","Opens the profile in Scopus","FR1"],
+ ["Profile confirmed","Checkbox","Requester","—","Required before submit; cleared if the ID changes","FR1"],
+ ["h-index","Read-only","Scopus","Author Retrieval · METRICS · <code>h-index</code>","Career figure","FR2"],
+ ["Total citations","Read-only","Scopus","Author Retrieval · METRICS · <code>citation-count</code>","Career figure; not <code>cited-by-count</code>","FR2"],
+ ["Total documents","Read-only","Scopus","Author Retrieval · METRICS · <code>document-count</code>","Career figure","FR2"],
+ ["Review period (from–to)","Read-only","ESCR request / system date","—","Renewal: contract start year → current year. Recruitment: current year − 4 → current year","FR3"],
+ ["Publications in period","Read-only","Scopus","Scopus Search · <code>opensearch:totalResults</code>","AU-ID + PUBYEAR within the period; all document types","FR3"],
+ ["Q1 publications in period","Read-only","Scopus","Serial Title · CITESCORE · percentile","≥ 75, primary category, in-progress year else latest Complete year","FR4"],
+ ["Scopus data as of","Read-only","System","—","Set at submission; reset on resubmission","FR5"]
+];
+document.getElementById("contract-rows").innerHTML=C.map(r=>`<tr>${r.map((c,i)=>`<td>${i===0?`<b>${c}</b>`:c}</td>`).join("")}</tr>`).join("");
+
+const CODE=`# Reference only. The implementation approach is at the T.I.'s discretion (BRD FR5).
+BASE = "https://api.elsevier.com/content"
+HEADERS = {"X-ELS-APIKey": API_KEY, "Accept": "application/json"}
+# add "X-ELS-Insttoken": INST_TOKEN only when calling from outside the KU network
+
+def review_period(request, today):
+    """FR3: whole publication years."""
+    if request.form == "ESCR-CR":
+        return request.current_contract_start.year, today.year   # BRD Assumption 3
+    return today.year - 4, today.year                            # recruitment: 5 most recent years
+
+def career_metrics(author_id):
+    """FR2: career figures from the Scopus author profile."""
+    a = get(f"{BASE}/author/author_id/{author_id}", view="METRICS")["author-retrieval-response"][0]
+    return {
+        "h_index":   int(a["h-index"]),
+        "citations": int(a["coredata"]["citation-count"]),   # not cited-by-count
+        "documents": int(a["coredata"]["document-count"]),
+    }
+
+def period_documents(author_id, y_from, y_to):
+    """FR3: documents in the review period; returns (count, issn list)."""
+    q = f"AU-ID({author_id}) AND PUBYEAR > {y_from - 1} AND PUBYEAR < {y_to + 1}"
+    issns, start, total = [], 0, None
+    while total is None or start < total:
+        res = get(f"{BASE}/search/scopus", query=q, start=start, count=200,
+                  field="dc:identifier,prism:issn,prism:eIssn")["search-results"]
+        total = int(res["opensearch:totalResults"])
+        for doc in res.get("entry", []):
+            if "error" in doc:            # empty result set
+                continue
+            issns.append(doc.get("prism:issn") or doc.get("prism:eIssn"))   # may be None
+        start += 200
+    return total, issns
+
+def journal_is_q1(issn, cache):
+    """FR4: percentile >= 75 in the primary subject category, current CiteScore year."""
+    if not issn:
+        return False                       # counted as a publication, not as Q1
+    if issn in cache:
+        return cache[issn]
+    entry = get(f"{BASE}/serial/title/issn/{issn}", view="CITESCORE")["serial-metadata-response"]["entry"][0]
+    primary = primary_subject_code(entry)  # derive as in DEA-2025-182 Phase 2 (design check 4)
+    years = entry.get("citeScoreYearInfoList", {}).get("citeScoreYearInfo", [])
+    in_progress = [y for y in years if y["@status"] == "In-Progress"]
+    complete = sorted((y for y in years if y["@status"] == "Complete"),
+                      key=lambda y: int(y["@year"]), reverse=True)
+    pct = None
+    for y in in_progress + complete[:1]:   # in-progress first, else latest complete
+        pct = percentile(y, primary)
+        if pct is not None:
+            break
+    cache[issn] = pct is not None and pct >= 75
+    return cache[issn]
+
+def percentile(year_info, subject_code):
+    for info in year_info["citeScoreInformationList"][0]["citeScoreInfo"]:
+        for rank in info.get("citeScoreSubjectRank", []):
+            if rank["subjectCode"] == subject_code:
+                return int(rank["percentile"])
+    return None
+
+def snapshot(request, author_id, today):
+    y_from, y_to = review_period(request, today)
+    m = career_metrics(author_id)
+    count, issns = period_documents(author_id, y_from, y_to)
+    cache = {}
+    q1 = sum(journal_is_q1(i, cache) for i in issns)
+    return {**m, "period_from": y_from, "period_to": y_to,
+            "period_publications": count, "period_q1": q1,
+            "retrieved_on": today.isoformat()}`;
+document.getElementById("ref").textContent=CODE;
+document.getElementById("copy").addEventListener("click",e=>{
+  const b=e.currentTarget;
+  const done=()=>{b.textContent="Copied";setTimeout(()=>b.textContent="Copy",1600);};
+  try{navigator.clipboard.writeText(CODE).then(done,()=>sel());}catch(_){sel();}
+  function sel(){const r=document.createRange();r.selectNodeContents(document.getElementById("ref"));const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent="Selected, press Ctrl+C";}
+});
+
+const APIS=[
+ {n:"Author Retrieval",u:"/content/author/author_id/{id}",v:"LIGHT (profile check, S4) · METRICS (career figures, S8)",f:"preferred name, affiliation-current · h-index, citation-count, document-count",q:"5,000 per week",r:"6 / 9 / 12 per second (by key level)",e:"Elsevier marks only STANDARD and ENHANCED as possibly restricted; LIGHT and METRICS are not."},
+ {n:"Scopus Search",u:"/content/search/scopus",v:"query AU-ID({id}) AND PUBYEAR … (S9)",f:"opensearch:totalResults · prism:issn, prism:eIssn",q:"20,000 per week",r:"9 / 12 / 15 per second",e:"Up to 200 results per page; page with start. Results above 5,000 need cursor paging, which a single author's five years never reaches."},
+ {n:"Serial Title",u:"/content/serial/title/issn/{issn}",v:"CITESCORE (S10)",f:"citeScoreYearInfo (@year, @status), percentile per subject category",q:"20,000 per week",r:"6 / 9 / 12 per second",e:"The same endpoint the DEA-2025-182 Phase 2 work uses. One call per distinct ISSN per request."}
+];
+document.getElementById("api-cards").innerHTML=APIS.map(a=>`<div class="api-card"><h3>${a.n}</h3><code>${a.u}</code><dl><dt>Views / query</dt><dd>${a.v}</dd><dt>Fields used</dt><dd>${a.f}</dd><dt>Weekly quota</dt><dd>${a.q}</dd><dt>Rate limit</dt><dd>${a.r}</dd><dt>Note</dt><dd>${a.e}</dd></dl></div>`).join("")+
+ `<div class="api-card"><h3>All calls</h3><dl><dt>Base URL</dt><dd><code>https://api.elsevier.com</code></dd><dt>Auth</dt><dd><code>X-ELS-APIKey</code> header; <code>X-ELS-Insttoken</code> only off the KU network</dd><dt>Format</dt><dd><code>Accept: application/json</code></dd><dt>Throttled</dt><dd>HTTP 429 when a quota or rate limit is exceeded</dd><dt>Credentials</dt><dd>Held by the lookup only; never in form data (NFR)</dd></dl></div>`;
+
+const CHECKS=[
+ ["ESCR change-type field","Which field identifies a contract renewal while the form is being filled (S2). The ESCR-CR request number is assigned later."],
+ ["Current contract start date","Which ESCR field holds it (S7, BRD Assumption 3). If none does, agree the source before build (BRD Risk 6)."],
+ ["Live response paths","Run one call per API with a test Author ID and confirm the JSON paths used in the reference logic (S8–S10)."],
+ ["Primary subject category","Serial Title does not label one category as primary. Use the same derivation as the DEA-2025-182 Phase 2 build (S10)."],
+ ["Retrieval timing","Retrieve when the profile is confirmed, and re-run before saving if submission happens on a later day, so the stored date is the submission date (S12)."],
+ ["Resubmission trigger","Which WFC send-back route returns the request to the requester; refresh on the requester's resubmission (S14)."],
+ ["Total citations field","Compare citation-count with the Scopus profile page during UAT, so total citations is the figure approvers expect (S8)."]
+];
+document.getElementById("check-list").innerHTML=CHECKS.map((c,i)=>`<li class="dc"><span class="n">${i+1}</span><b>${c[0]}</b><span class="why">${c[1]}</span></li>`).join("");
+
+const ACC=[
+ ["FR1","A requester can enter a Scopus Author ID on either form, see the matching author name and current affiliation with a link to the Scopus profile, and must confirm the profile before submitting."],
+ ["FR2","On submission, h-index, total citations and total documents match the researcher's Scopus author profile on the retrieval date."],
+ ["FR3","For an ESCR contract renewal, the publication and Q1 counts cover the calendar year of the current contract start up to the retrieval date; for a recruitment request, the five most recent publication years."],
+ ["FR4","Q1 counts match a manual check of the journals' CiteScore percentiles in their primary subject category, using the current CiteScore year."],
+ ["FR5","The retrieval date is shown on the form, and every approver in the chain sees the same figures as were retrieved at submission."],
+ ["FR5","When a request is returned and resubmitted, the figures and the retrieval date are updated at resubmission."],
+ ["FR6","The section appears only on contract renewal requests in ESCR and on every Researcher Recruitment Approval request; other ESCR change types and the approval routing of both workflows are unchanged."],
+ ["UAT","UAT completed with no critical or high-severity defects outstanding."]
+];
+const KEY="dea238-accept";let ticks={};
+try{ticks=JSON.parse(localStorage.getItem(KEY)||"{}")||{};}catch(_){ticks={};}
+const al=document.getElementById("accept-list");
+al.innerHTML=ACC.map((a,i)=>`<li><label for="acc${i}"><input type="checkbox" id="acc${i}" ${ticks[i]?"checked":""}><span><span class="ref">${a[0]}</span>${a[1]}</span></label></li>`).join("");
+function prog(){const n=al.querySelectorAll("input:checked").length;document.getElementById("prog").textContent=`${n} of ${ACC.length} passed.`;}
+al.addEventListener("change",e=>{const i=e.target.id.replace("acc","");ticks[i]=e.target.checked;try{localStorage.setItem(KEY,JSON.stringify(ticks));}catch(_){}prog();});
+prog();
+
+const h=(location.hash||"").replace("#","");
+select(S[h]?h:"S1",false);
+</script>
+
+</body></html>
