@@ -1,16 +1,41 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Interactive BRD Viewer</title><link rel="stylesheet" href="/viewer.css">
-<script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
-<script defer src="/viewer.js"></script></head>
-<body><header><div class="brand"><strong>Interactive BRD Viewer</strong><small>Universal Word task pane</small></div><span id="office-state" class="pill">Loading</span></header>
-<main>
-  <div class="controls"><label for="brd">Document / BRD</label><select id="brd" aria-label="BRD"><option value="">Select a BRD</option></select>
-  <label for="illustration">Illustration</label><select id="illustration" aria-label="Illustration"><option value="">Select illustration</option></select>
-  <div class="actions"><button id="bind" type="button">Associate with this Word document</button><button id="reload" type="button" class="secondary">Refresh</button></div>
-  <label class="checkbox"><input type="checkbox" id="autoopen"> Open this viewer automatically with this document</label>
-  <p class="hint" id="status" role="status" aria-live="polite">Loading catalog...</p></div>
-  <div class="viewer-title"><strong id="diagram-title">No illustration selected</strong><span id="version"></span></div>
-  <div id="empty" class="empty">Select a BRD to display its interactive illustration.</div>
-  <iframe id="illustration-frame" title="BRD interactive illustration" hidden referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" loading="eager"></iframe>
-</main><footer>Private test build • HTML is loaded from the same approved server</footer></body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Browse versioned interactive illustrations for business requirements documents.">
+  <title>Interactive BRD Library</title>
+  <link rel="stylesheet" href="/viewer.css">
+  <script defer src="/viewer.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-content">
+      <div><div class="eyebrow">BUSINESS REQUIREMENTS</div><h1>Interactive BRD Library</h1><p>Explore workflow diagrams, rules, API references, and acceptance criteria.</p></div>
+      <span class="header-tag">No installation required</span>
+    </div>
+  </header>
+  <main class="layout">
+    <section class="controls" aria-label="Illustration selection">
+      <label for="search">Find a BRD</label>
+      <input id="search" type="search" placeholder="Search by project ID or title" autocomplete="off">
+      <label for="brd">BRD</label>
+      <select id="brd"><option value="">Select a BRD</option></select>
+      <label for="illustration">Illustration</label>
+      <select id="illustration"><option value="">Select an illustration</option></select>
+      <div class="actions">
+        <a id="open" class="button" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">Open full-page illustration</a>
+        <button id="copy" class="button secondary" type="button" disabled>Copy shareable link</button>
+      </div>
+      <p id="status" class="status" role="status" aria-live="polite">Loading catalog...</p>
+      <p class="hint">For Word reviewers: paste the copied link into the appropriate Functional Requirements section of your .docx. Reviewers open it in any modern browser, without an add-in.</p>
+    </section>
+    <section class="content" aria-label="Interactive preview">
+      <div class="content-head"><div><div class="eyebrow" id="project">BRD illustration</div><h2 id="title">Choose an illustration</h2><p id="description"></p></div><span id="version"></span></div>
+      <div id="empty" class="empty">Select a BRD and illustration to preview its interactive content.</div>
+      <iframe id="frame" title="Interactive BRD illustration" hidden referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" loading="eager"></iframe>
+    </section>
+  </main>
+  <footer>Versioned HTML illustrations · One shareable link per illustration · Hosted on your own server</footer>
+</body>
+</html>
